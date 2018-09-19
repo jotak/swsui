@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { PollIntervalInMs } from '../../types/GraphFilter';
 import { Button, MenuItem, Icon, DropdownButton } from 'patternfly-react';
+import { PollIntervalInMs } from '../../types/Common';
 
 type GraphRefreshProps = {
   id: string;
