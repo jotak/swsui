@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import Namespace from '../types/Namespace';
 import MetricsOptions from '../types/MetricsOptions';
-import { Metrics } from '../types/Metrics';
+import { Charts, Metrics } from '../types/Metrics';
 import { IstioConfigDetails } from '../types/IstioConfigDetails';
 import { IstioConfigList } from '../types/IstioConfigList';
 import { Workload, WorkloadNamespaceResponse } from '../types/Workload';
@@ -166,6 +166,16 @@ export const getWorkloadMetrics = (
   params: MetricsOptions
 ): Promise<Response<Metrics>> => {
   return newRequest(HTTP_VERBS.GET, urls.workloadMetrics(namespace, workload), params, {}, auth);
+};
+
+export const getRuntimeMetrics = (
+  auth: AuthToken,
+  namespace: string,
+  app: string,
+  template: string,
+  params: MetricsOptions
+): Promise<Response<Charts>> => {
+  return newRequest(HTTP_VERBS.GET, urls.runtimeMetrics(namespace, app, template), params, {}, auth);
 };
 
 export const getServiceHealth = (

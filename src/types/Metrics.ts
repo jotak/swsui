@@ -37,3 +37,22 @@ export enum MetricsObjectTypes {
   WORKLOAD,
   APP
 }
+
+export interface Charts {
+  title: string;
+  charts: Chart[];
+}
+
+export interface Chart {
+  name: string;
+  unit: string;
+  spans: number;
+  counterRate?: MetricGroup;
+  histogram?: Histogram;
+  aggregations: Aggregation[];
+}
+
+export interface Aggregation {
+  label: string;
+  displayName: string;
+}

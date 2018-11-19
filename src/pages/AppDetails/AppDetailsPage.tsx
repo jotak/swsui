@@ -7,6 +7,7 @@ import { Breadcrumb, TabContainer, Nav, NavItem, TabContent, TabPane } from 'pat
 import AppInfo from './AppInfo';
 import * as MessageCenter from '../../utils/MessageCenter';
 import AppMetricsContainer from '../../containers/AppMetricsContainer';
+import RtMetricsContainer from '../../containers/RtMetricsContainer';
 import { AppHealth } from '../../types/Health';
 import { ListPageLink, TargetPage } from '../../components/ListPage/ListPageLink';
 import { MetricsObjectTypes, MetricsDirection } from '../../types/Metrics';
@@ -111,6 +112,9 @@ class AppDetails extends React.Component<RouteComponentProps<AppId>, AppDetailsS
               <NavItem eventKey="out_metrics">
                 <div>Outbound Metrics</div>
               </NavItem>
+              <NavItem eventKey="rt_metrics">
+                <div>Vert.x Metrics</div>
+              </NavItem>
             </Nav>
             <TabContent>
               <TabPane eventKey="info">
@@ -137,6 +141,13 @@ class AppDetails extends React.Component<RouteComponentProps<AppId>, AppDetailsS
                   object={this.props.match.params.app}
                   objectType={MetricsObjectTypes.APP}
                   direction={MetricsDirection.OUTBOUND}
+                />
+              </TabPane>
+              <TabPane eventKey="rt_metrics" mountOnEnter={true} unmountOnExit={true}>
+                <RtMetricsContainer
+                  namespace={this.props.match.params.namespace}
+                  app={this.props.match.params.app}
+                  template={'vertx'}
                 />
               </TabPane>
             </TabContent>

@@ -1,12 +1,12 @@
 import { KialiAppState } from '../store/Store';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router';
-import Metrics, { MetricsProps } from '../components/Metrics/Metrics';
+import { RtMetrics, RtMetricsProps } from '../components/Metrics/RtMetrics';
 
 const mapStateToProps = (state: KialiAppState) => ({
   isPageVisible: state.globalState.isPageVisible
 });
 
-const AppMetricsContainer = withRouter<RouteComponentProps<{}> & MetricsProps>(connect(mapStateToProps)(Metrics));
+const RtMetricsContainer = withRouter<RouteComponentProps<{}> & RtMetricsProps>(connect(mapStateToProps)(RtMetrics));
 
-export default AppMetricsContainer;
+export default RtMetricsContainer;

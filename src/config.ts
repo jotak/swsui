@@ -95,6 +95,8 @@ const conf = {
       namespaceHealth: (namespace: string) => `api/namespaces/${namespace}/health`,
       namespaceMetrics: (namespace: string) => `api/namespaces/${namespace}/metrics`,
       namespaceValidations: (namespace: string) => `api/namespaces/${namespace}/istio_validations`,
+      runtimeMetrics: (namespace: string, app: string, template: string) =>
+        `api/namespaces/${namespace}/apps/${app}/rtmetrics/${template}`,
       serverConfig: `api/config`,
       services: (namespace: string) => `api/namespaces/${namespace}/services`,
       service: (namespace: string, service: string) => `api/namespaces/${namespace}/services/${service}`,
