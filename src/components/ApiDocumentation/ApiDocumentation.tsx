@@ -20,24 +20,24 @@ declare global {
 /* eslint-enable */
 
 interface ApiDocumentationProps {
-    apiType: string;
-    baseUrl: string;
-  };
+  namespace: string;
+  service: string;
+  apiType: string;
+}
 
 export class ApiDocumentation extends React.Component<ApiDocumentationProps> {
-
   render() {
     return (
       <div>
         <rapi-doc
-           spec-url={this.props.baseUrl + '/apispec'}
-           show-header="false"
-           show-info="false"
-           allow-authentication="false"
-           allow-try="false"
-           layout="column"
+          spec-url={`/api/namespaces/${this.props.namespace}/services/${this.props.service}/apispec`}
+          show-header="false"
+          show-info="false"
+          allow-authentication="false"
+          allow-try="false"
+          layout="column"
         />
-     </div>
+      </div>
     );
   }
 }

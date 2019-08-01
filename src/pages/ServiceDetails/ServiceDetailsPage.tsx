@@ -48,7 +48,7 @@ interface ParsedSearch {
   name?: string;
 }
 
-const emptyService = {
+const emptyService: ServiceDetailsInfo = {
   istioSidecar: true, // true until proven otherwise (workload with missing sidecar exists)
   service: {
     type: '',
@@ -74,11 +74,7 @@ const emptyService = {
       delete: false
     }
   },
-  validations: {},
-  apiDocumentation: {
-    type: '',
-    baseUrl: ''
-  }
+  validations: {}
 };
 
 class ServiceDetails extends React.Component<ServiceDetailsProps, ServiceDetailsState> {
@@ -357,9 +353,7 @@ class ServiceDetails extends React.Component<ServiceDetailsProps, ServiceDetails
                     </>
                   </NavItem>
                 ))}
-              { this.state.serviceDetailsInfo.apiDocumentation && (this.state.serviceDetailsInfo.apiDocumentation.baseUrl !=='') && (
-                <NavItem eventKey="api">API Doc</NavItem>
-              )}  
+              {this.state.serviceDetailsInfo.apiDocumentationType && <NavItem eventKey="api">API Doc</NavItem>}
             </Nav>
             <TabContent>
               <TabPane eventKey="info" mountOnEnter={true} unmountOnExit={true}>
@@ -403,11 +397,12 @@ class ServiceDetails extends React.Component<ServiceDetailsProps, ServiceDetails
                   />
                 </TabPane>
               )}
-              {this.state.serviceDetailsInfo.apiDocumentation && (this.state.serviceDetailsInfo.apiDocumentation.baseUrl !=='') && (
+              {this.state.serviceDetailsInfo.apiDocumentationType && (
                 <TabPane eventKey="api" mountOnEnter={true} unmountOnExit={true}>
                   <ApiDocumentation
-                    apiType={this.state.serviceDetailsInfo.apiDocumentation.type}
-                    baseUrl={this.state.serviceDetailsInfo.apiDocumentation.baseUrl}
+                    apiType={this.state.serviceDetailsInfo.apiDocumentationType}
+                    namespace={this.props.match.params.namespace}
+                    service={this.props.match.params.service}
                   />
                 </TabPane>
               )}
