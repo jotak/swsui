@@ -81,4 +81,37 @@ describe('Grafana links', () => {
     expect(links[1][0]).toEqual('View in Grafana 2');
     expect(links[1][1]).toEqual('http://grafana:3000?orgId=1&var-app=my-app&var-namespace=my-namespace');
   });
+
+  it('build static links', () => {
+    const links = GrafanaLinks.buildGrafanaLinks({
+      links: [
+        {
+          name: 'Dashboard 1',
+          url: 'http://grafana:3000',
+          variables: {}
+        },
+        {
+          name: 'Dashboard 2',
+          url: 'http://grafana:3000?orgId=1',
+          variables: {}
+        },
+        {
+          name: 'Dashboard 3',
+          url: 'http://grafana:3000?orgId=1',
+          variables: { namespace: 'var-namespace' }
+        }
+      ],
+      namespace: 'my-namespace',
+      object: 'my-app',
+      objectType: MetricsObjectTypes.APP,
+      version: 'v1'
+    });
+    expect(links).toHaveLength(3);
+    expect(links[0][0]).toEqual('Dashboard 1');
+    expect(links[0][1]).toEqual('http://grafana:3000');
+    expect(links[1][0]).toEqual('Dashboard 2');
+    expect(links[1][1]).toEqual('http://grafana:3000?orgId=1');
+    expect(links[2][0]).toEqual('Dashboard 3');
+    expect(links[2][1]).toEqual('http://grafana:3000?orgId=1&var-namespace=my-namespace');
+  });
 });

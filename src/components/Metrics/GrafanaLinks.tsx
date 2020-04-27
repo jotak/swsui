@@ -18,31 +18,34 @@ export class GrafanaLinks extends React.PureComponent<Props, {}> {
     const links: [string, string][] = [];
     props.links.forEach(d => {
       const first = d.url.includes('?') ? '&' : '?';
-      const nsvar = d.variables.namespace ? `&${d.variables.namespace}=${props.namespace}` : '';
-      const vervar = d.variables.version && props.version ? `&${d.variables.version}=${props.version}` : '';
+      const params: string[] = [];
       switch (props.objectType) {
         case MetricsObjectTypes.SERVICE:
-          const fullServiceName = `${props.object}.${props.namespace}.svc.cluster.local`;
           if (d.variables.service) {
-            const url = `${d.url}${first}${d.variables.service}=${fullServiceName}${nsvar}${vervar}`;
-            links.push([d.name, url]);
+            params.push(`${d.variables.service}=${props.object}.${props.namespace}.svc.cluster.local`);
           }
           break;
         case MetricsObjectTypes.WORKLOAD:
           if (d.variables.workload) {
-            const url = `${d.url}${first}${d.variables.workload}=${props.object}${nsvar}${vervar}`;
-            links.push([d.name, url]);
+            params.push(`${d.variables.workload}=${props.object}`);
           }
           break;
         case MetricsObjectTypes.APP:
           if (d.variables.app) {
-            const url = `${d.url}${first}${d.variables.app}=${props.object}${nsvar}${vervar}`;
-            links.push([d.name, url]);
+            params.push(`${d.variables.app}=${props.object}`);
           }
           break;
         default:
           break;
       }
+      if (d.variables.namespace) {
+        params.push(`${d.variables.namespace}=${props.namespace}`);
+      }
+      if (d.variables.version && props.version) {
+        params.push(`${d.variables.version}=${props.version}`);
+      }
+      const link = d.url + (params.length > 0 ? first + params.join('&') : '');
+      links.push([d.name, link]);
     });
     return links;
   }
