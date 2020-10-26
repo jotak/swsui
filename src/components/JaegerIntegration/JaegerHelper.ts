@@ -146,12 +146,12 @@ export const getSpanType = (span: Span): 'envoy' | 'http' | 'tcp' | 'unknown' =>
   return 'unknown';
 };
 
-type OpenTracingBaseInfo = {
+export type OpenTracingBaseInfo = {
   component?: string;
   hasError: boolean;
 };
 
-type OpenTracingHTTPInfo = OpenTracingBaseInfo & {
+export type OpenTracingHTTPInfo = OpenTracingBaseInfo & {
   statusCode?: number;
   url?: string;
   method?: string;
@@ -195,7 +195,7 @@ export const extractOpenTracingHTTPInfo = (span: Span): OpenTracingHTTPInfo => {
   return info;
 };
 
-type OpenTracingTCPInfo = OpenTracingBaseInfo & {
+export type OpenTracingTCPInfo = OpenTracingBaseInfo & {
   topic?: string;
   peerAddress?: string;
   peerHostname?: string;
@@ -223,7 +223,7 @@ export const extractOpenTracingTCPInfo = (span: Span): OpenTracingTCPInfo => {
   return info;
 };
 
-type EnvoySpanInfo = OpenTracingHTTPInfo & {
+export type EnvoySpanInfo = OpenTracingHTTPInfo & {
   responseFlags?: string;
   peer?: string;
   peerNamespace?: string;
@@ -258,4 +258,17 @@ export const extractEnvoySpanInfo = (span: Span): EnvoySpanInfo => {
     }
   });
   return info;
+};
+
+export const extractSpanInfo = (span: Span) => {
+  const type = getSpanType(span);
+  const info =
+    type === 'envoy'
+      ? extractEnvoySpanInfo(span)
+      : type === 'http'
+      ? extractOpenTracingHTTPInfo(span)
+      : type === 'tcp'
+      ? extractOpenTracingTCPInfo(span)
+      : extractOpenTracingBaseInfo(span);
+  return { type: type, info: info };
 };

@@ -22,18 +22,17 @@ import {
 } from '@patternfly/react-table';
 import { ExternalLinkAltIcon, ExclamationCircleIcon } from '@patternfly/react-icons';
 
+import * as API from 'services/Api';
+import { addError, addInfo } from 'utils/AlertUtils';
 import history from 'app/History';
 import { formatDuration } from './transform';
-import {
-  extractEnvoySpanInfo,
-  extractOpenTracingHTTPInfo,
-  extractOpenTracingTCPInfo,
-  isErrorTag
-} from '../JaegerHelper';
+import { EnvoySpanInfo, isErrorTag, OpenTracingHTTPInfo, OpenTracingTCPInfo } from '../JaegerHelper';
 import { style } from 'typestyle';
 import { PFAlertColor } from 'components/Pf/PfColors';
 import { SpanTableItem } from './SpanTableItem';
 import { compareNullable } from 'components/FilterList/FilterHelper';
+import { MetricsStatsQuery } from 'types/MetricsOptions';
+import { MetricsStats } from 'types/Metrics';
 
 type SortableCell<T> = ICell & {
   compare?: (a: T, b: T) => number;
@@ -53,6 +52,7 @@ interface State {
   toggled?: string;
   sortIndex: number;
   sortDirection: SortByDirection;
+  metricsStats?: { [key: string]: MetricsStats };
 }
 
 const kebabDropwdownStyle = style({
@@ -73,7 +73,60 @@ export class SpanTable extends React.Component<Props, State> {
     if (prevState.toggled) {
       this.setState({ toggled: undefined });
     }
+    this.fetchComparisonMetrics();
   }
+
+  private fetchComparisonMetrics = () => {
+    // Q: should query time be relative to span time or not?
+    this.setState({ metricsStats: undefined });
+    const queryTime = Math.floor(Date.now() / 1000);
+    const queries: MetricsStatsQuery[] = SpanTable.deduplicateMetricQueries(this.props.spans)
+      .slice(0, 10)
+      .flatMap(span => {
+        const info = span.info as EnvoySpanInfo;
+        if (!info.direction) {
+          console.warn('Could not determine direction from Envoy span.');
+          return [];
+        }
+        const query: MetricsStatsQuery = {
+          queryTime: queryTime,
+          namespace: span.namespace,
+          name: span.app,
+          kind: 'app',
+          interval: '30m',
+          direction: info.direction,
+          avg: true,
+          quantiles: ['0.99']
+        };
+        return [query, { ...query, interval: '3h' }];
+      });
+    API.getMetricsStats(queries)
+      .then(res => {
+        this.setState({ metricsStats: res.data.stats });
+        if (res.data.warnings && res.data.warnings.length > 0) {
+          addInfo(res.data.warnings.join('; '), false);
+        }
+      })
+      .catch(err => {
+        addError('Could not fetch metrics stats.', err);
+      });
+  };
+
+  private static deduplicateMetricQueries = (spans: SpanTableItem[]) => {
+    // Exclude redundant queries based on this keygen as a merger, + hashmap
+    const keygen = (d: string, ns: string, app: string) => `${d}:${ns}:${app}`;
+    const dedupSpans = new Map<string, SpanTableItem>();
+    spans.forEach(span => {
+      if (span.type === 'envoy') {
+        const info = span.info as EnvoySpanInfo;
+        if (info.direction) {
+          // Key to query metrics from same app (all peers)
+          dedupSpans.set(keygen(info.direction, span.namespace, span.app), span);
+        }
+      }
+    });
+    return Array.from(dedupSpans.values());
+  };
 
   private renderLinks = (key: string, item: SpanTableItem) => {
     const links = [
@@ -162,7 +215,7 @@ export class SpanTable extends React.Component<Props, State> {
   }
 
   private renderEnvoySummary(item: SpanTableItem) {
-    const info = extractEnvoySpanInfo(item);
+    const info = item.info as EnvoySpanInfo;
     let rqLabel = 'Request';
     let peerLink: JSX.Element | undefined = undefined;
     if (info.direction === 'inbound') {
@@ -213,7 +266,7 @@ export class SpanTable extends React.Component<Props, State> {
   }
 
   private renderHTTPSummary(item: SpanTableItem) {
-    const info = extractOpenTracingHTTPInfo(item);
+    const info = item.info as OpenTracingHTTPInfo;
     const rqLabel =
       info.direction === 'inbound' ? 'Received request' : info.direction === 'outbound' ? 'Sent request' : 'Request';
     return (
@@ -234,7 +287,7 @@ export class SpanTable extends React.Component<Props, State> {
   }
 
   private renderTCPSummary(item: SpanTableItem) {
-    const info = extractOpenTracingTCPInfo(item);
+    const info = item.info as OpenTracingTCPInfo;
     return (
       <>
         {this.renderCommonSummary(item)}

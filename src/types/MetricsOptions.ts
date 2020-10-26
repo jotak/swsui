@@ -9,3 +9,14 @@ export interface IstioMetricsOptions extends MetricsQuery {
 
 export type Reporter = 'source' | 'destination';
 export type Direction = 'inbound' | 'outbound';
+
+export interface MetricsStatsQuery {
+  namespace: string;
+  name: string;
+  kind: 'app' | 'service' | 'workload';
+  queryTime: number;
+  interval: string;
+  direction: Direction;
+  avg: boolean;
+  quantiles: string[];
+}

@@ -27,3 +27,20 @@ export enum MetricsObjectTypes {
   WORKLOAD,
   APP
 }
+
+export interface MetricsStatsResult {
+  stats: { [key: string]: MetricsStats };
+  // Note: warnings here is for non-blocking errors, it's set when some stats are available, but not all, for instance due to inaccessible namespaces
+  // For more serious errors (e.g. prometheus inaccessible) the query would return an HTTP error
+  warnings?: string[];
+}
+
+export interface MetricsStats {
+  responseTimes: ResponseTimeStats[];
+}
+
+export interface ResponseTimeStats {
+  peer: string;
+  peerNamespace: string;
+  values: { [key: string]: number };
+}
